@@ -5,10 +5,7 @@
   // Toggle instrumentation pipeline visibility metrics for validation tracking
   var TISSO_DEBUG_BONUS_ADD = false;
 
-  /**
-   * Orchestrates section instance encapsulation isolation boundary elements.
-   * @param {HTMLElement} rootComponentNode - Root instance element node block container.
-   */
+ 
   function initLookbook(rootComponentNode) {
     if (rootComponentNode.dataset.tissoInitialized === 'true') return;
     rootComponentNode.dataset.tissoInitialized = 'true';
@@ -64,10 +61,7 @@
       });
     });
 
-    /**
-     * Hydrates and opens the option configuration transactional layer window modal.
-     * @param {Object} productMatrixObject - Instantiated deserialized local structural schema configuration properties object map data.
-     */
+  
     function renderModalContents(productMatrixObject) {
       transactionalState.chosenSelections = {};
       elementsCache.errorMsg.style.display = 'none';
