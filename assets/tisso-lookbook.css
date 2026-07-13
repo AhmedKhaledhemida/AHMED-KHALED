@@ -216,7 +216,7 @@
   top: 0;
   bottom: 0;
   width: 4px;
-  background-color: #1a478a; /* Custom selection color indicator strip */
+  background-color: #000; /* Custom selection color indicator strip */
 }
 
 /* Custom Size Picker Layout Select Form Box */
