@@ -1,10 +1,19 @@
+{%- comment -%}
+SECTION: Tisso Lookbook Component
+{%- endcomment -%}
+
 {{ 'tisso-lookbook.css' | asset_url | stylesheet_tag }}
 
-<div class="tisso-lookbook-section" data-tisso-lookbook data-section-id="{{ section.id }}">
-  <h2 class="tisso-lookbook__title">{{ section.settings.heading }}</h2>
+<div class="tisso-lookbook-section" 
+     data-tisso-lookbook 
+     data-section-id="{{ section.id }}"
+     aria-label="Interactive Lookbook Grid">
+     
+  <h2 class="tisso-lookbook__title">{{ section.settings.heading | escape }}</h2>
 
   <div class="tisso-lookbook__grid">
     {%- for i in (1..6) -%}
+      {%- comment -%} Dynamically construct configuration hash keys for iterative mapping {%- endcomment -%}
       {%- assign prod_setting_id = 'product_' | append: i -%}
       {%- assign top_setting_id = 'top_' | append: i -%}
       {%- assign left_setting_id = 'left_' | append: i -%}
@@ -16,12 +25,25 @@
       <div class="tisso-lookbook__tile">
         {%- if current_product != blank -%}
           {%- if current_product.featured_image != blank -%}
-            <img class="tisso-lookbook__image" src="{{ current_product.featured_image | image_url: width: 600 }}" alt="{{ current_product.title | escape }}" loading="lazy">
+            <img class="tisso-lookbook__image" 
+                 src="{{ current_product.featured_image | image_url: width: 600 }}" 
+                 alt="{{ current_product.title | escape }}" 
+                 loading="lazy"
+                 width="600"
+                 height="600">
           {%- else -%}
             {{ 'image' | placeholder_svg_tag: 'tisso-lookbook__image' }}
           {%- endif -%}
 
-          <button type="button" class="tisso-lookbook__hotspot" style="top: {{ hotspot_top }}%; left: {{ hotspot_left }}%;" data-hotspot-handle="{{ section.id }}-{{ current_product.handle }}">+</button>
+          {%- comment -%} Hotspot node bound to a unique Section-Scoped identity mapping context {%- endcomment -%}
+          <button type="button" 
+                  class="tisso-lookbook__hotspot" 
+                  style="top: {{ hotspot_top }}%; left: {{ hotspot_left }}%;" 
+                  data-hotspot-handle="{{ section.id }}-{{ current_product.handle }}"
+                  aria-haspopup="dialog"
+                  aria-label="View details for {{ current_product.title | escape }}">
+            +
+          </button>
 
           <script type="application/json" data-product-json="{{ section.id }}-{{ current_product.handle }}">
             {
@@ -48,9 +70,10 @@
     {%- endfor -%}
   </div>
 
-  <div class="tisso-modal-overlay" data-modal-overlay>
+  {%- comment -%} Singleton Global Modal Context Structure Shared Among Active Hotspots {%- endcomment -%}
+  <div class="tisso-modal-overlay" data-modal-overlay aria-hidden="true" role="dialog">
     <div class="tisso-modal-card">
-      <button type="button" class="tisso-modal__close" data-modal-close>&times;</button>
+      <button type="button" class="tisso-modal__close" data-modal-close aria-label="Close modal">&times;</button>
 
       <div class="tisso-modal__meta-row">
         <div class="tisso-modal__img-box">
@@ -59,25 +82,26 @@
         <div class="tisso-modal__text-box">
           <h3 class="tisso-modal__title" data-modal-title>Product Name</h3>
           <div class="tisso-modal__price" data-modal-price>0,00€</div>
-          <p class="tisso-modal__description" data-modal-desc>Description text goes here.</p>
+          <p class="tisso-modal__description" data-modal-desc>Description text.</p>
         </div>
       </div>
 
+      {%- comment -%} Client-side dynamic selection element generation target element workspace {%- endcomment -%}
       <div data-options-target-container></div>
 
-      <div class="tisso-validation-msg" data-error-msg>Please select all valid custom variant values.</div>
+      <div class="tisso-validation-msg" data-error-msg role="alert">Please select all valid custom variant values.</div>
 
       <button type="button" class="tisso-btn-add-to-cart" data-add-to-cart-action>
         <span data-btn-label>ADD TO CART</span>
-        <span class="tisso-arrow-icon">&rarr;</span>
+        <span class="tisso-arrow-icon" aria-hidden="true">&rarr;</span>
       </button>
     </div>
   </div>
 </div>
 
-{%- comment -%} 
-  Injecting custom configuration context via data attributes so that 
-  the external asset script remains dynamic and theme-editor responsive 
+{%- comment -%}
+  META INJECTION CORE: Dynamic Runtime Configuration Schema 
+  Decouples transactional dependencies (like conditional Upsell IDs) from static scripts.
 {%- endcomment -%}
 <script type="application/json" data-tisso-section-config="{{ section.id }}">
   {
