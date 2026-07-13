@@ -1,9 +1,21 @@
 (function () {
-  // Guard against the init script being parsed more than once if the theme
-  // editor re-injects section markup without a full page reload.
+  var TISSO_DEBUG_BONUS_ADD = true;
+
   function initLookbook(root) {
     if (root.dataset.tissoInitialized === 'true') return;
     root.dataset.tissoInitialized = 'true';
+
+    const sectionId = root.getAttribute('data-section-id');
+    const configNode = root.querySelector(`[data-tisso-section-config="${sectionId}"]`);
+    let sectionConfig = { bonusVariantId: null, bonusProductId: null };
+
+    if (configNode) {
+      try {
+        sectionConfig = JSON.parse(configNode.textContent);
+      } catch(e) {
+        console.error('Tisso Lookbook: Could not parse section dynamic config runtime variables', e);
+      }
+    }
 
     const modalOverlay = root.querySelector('[data-modal-overlay]');
     const modalClose = root.querySelector('[data-modal-close]');
@@ -15,10 +27,6 @@
     const addToCartBtn = root.querySelector('[data-add-to-cart-action]');
     const btnLabel = root.querySelector('[data-btn-label]');
     const errorMsg = root.querySelector('[data-error-msg]');
-
-    // Bonus/upsell product info is passed in from Liquid as data attributes
-  
-    const bonusVariantId = root.dataset.bonusVariantId ? Number(root.dataset.bonusVariantId) : null;
 
     let activeProductData = null;
     let chosenSelections = {};
@@ -42,6 +50,10 @@
     function renderModalContents(product) {
       chosenSelections = {};
       errorMsg.style.display = 'none';
+
+      if (TISSO_DEBUG_BONUS_ADD) {
+        console.log('[Tisso] product.options for "' + product.title + '":', JSON.parse(JSON.stringify(product.options)));
+      }
 
       imgTarget.src = product.image;
       imgTarget.alt = product.title;
@@ -140,6 +152,40 @@
       if (e.target === modalOverlay) closeModal();
     });
 
+    function refreshCartUI() {
+      fetch('/cart.js')
+        .then(res => res.json())
+        .then(cart => {
+          const countSelectors = [
+            '.cart-count-bubble', '.cart-count-bubble span',
+            '#cart-icon-bubble', '.js-cart-count',
+            '[data-cart-count]', '.cart-link__bubble',
+            '.site-header__cart-count', '.header__cart-count'
+          ];
+          countSelectors.forEach(sel => {
+            document.querySelectorAll(sel).forEach(el => {
+              el.textContent = cart.item_count;
+            });
+          });
+        })
+        .catch(err => {
+          if (TISSO_DEBUG_BONUS_ADD) console.warn('[Tisso] could not fetch /cart.js for UI refresh', err);
+        });
+
+      const cartIconSelectors = [
+        'a[href="/cart"]', '#cart-icon-bubble', '.cart-icon',
+        '[data-cart-drawer-toggle]', '.js-cart-trigger'
+      ];
+      for (const sel of cartIconSelectors) {
+        const el = document.querySelector(sel);
+        if (el) {
+          if (TISSO_DEBUG_BONUS_ADD) console.log('[Tisso] attempting to trigger theme cart UI via:', sel);
+          el.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+          break;
+        }
+      }
+    }
+
     addToCartBtn.addEventListener('click', function () {
       if (!activeProductData) return;
 
@@ -157,6 +203,11 @@
         });
       });
 
+      if (TISSO_DEBUG_BONUS_ADD) {
+        console.log('[Tisso] chosenSelections:', chosenSelections);
+        console.log('[Tisso] matchedVariant:', matchedVariant);
+      }
+
       if (!matchedVariant || !matchedVariant.available) {
         alert('Selected variant option pattern combination is currently unavailable.');
         return;
@@ -167,35 +218,62 @@
         quantity: 1
       }];
 
-      // Match the Color option (Black) and Size option (Medium) specifically,
-      // rather than scanning all selected values indiscriminately. Falls back
-      // to a value-only scan if the product doesn't use Color/Size option names.
       const colorKey = Object.keys(chosenSelections).find(k => /^colou?r$/i.test(k));
       const sizeKey = Object.keys(chosenSelections).find(k => /^size$/i.test(k));
 
-      let hasBlack, hasMedium;
-      if (colorKey && sizeKey) {
-        hasBlack = String(chosenSelections[colorKey]).toLowerCase() === 'black';
-        hasMedium = String(chosenSelections[sizeKey]).toLowerCase() === 'medium';
-      } else {
-        const values = Object.values(chosenSelections).map(v => String(v).toLowerCase());
-        hasBlack = values.includes('black');
-        hasMedium = values.includes('medium');
+      function valueMeansBlack(v) {
+        const s = String(v).trim().toLowerCase();
+        return s.includes('black') || s === 'blk' || s === 'blk.';
+      }
+      function valueMeansMedium(v) {
+        const s = String(v).trim().toLowerCase();
+        return s.includes('medium') || s === 'm' || s === 'md' || s === 'med';
       }
 
-      if (bonusVariantId && hasBlack && hasMedium) {
-        const alreadyInPayload = itemsToPost.some(item => item.id === bonusVariantId);
-        if (!alreadyInPayload) {
-          itemsToPost.push({
-            id: bonusVariantId,
-            quantity: 1
-          });
+      let hasBlack, hasMedium;
+      if (colorKey && sizeKey) {
+        hasBlack = valueMeansBlack(chosenSelections[colorKey]);
+        hasMedium = valueMeansMedium(chosenSelections[sizeKey]);
+      } else {
+        const values = Object.values(chosenSelections);
+        hasBlack = values.some(valueMeansBlack);
+        hasMedium = values.some(valueMeansMedium);
+      }
+
+      if (TISSO_DEBUG_BONUS_ADD) {
+        console.log('[Tisso] colorKey:', colorKey, '| sizeKey:', sizeKey);
+        console.log('[Tisso] hasBlack:', hasBlack, '| hasMedium:', hasMedium);
+      }
+
+      if (sectionConfig.bonusVariantId) {
+        if (hasBlack && hasMedium) {
+          const bonusVariantId = sectionConfig.bonusVariantId;
+          const alreadyInPayload = itemsToPost.some(item => item.id === bonusVariantId);
+
+          if (TISSO_DEBUG_BONUS_ADD) {
+            console.log('[Tisso] bonus_product configured. bonusVariantId:', bonusVariantId, '| alreadyInPayload:', alreadyInPayload);
+          }
+
+          if (!alreadyInPayload) {
+            itemsToPost.push({
+              id: bonusVariantId,
+              quantity: 1
+            });
+          }
+        }
+      } else {
+        if (hasBlack && hasMedium) {
+          console.warn('[Tisso Lookbook] Black+Medium matched, but no "Soft Winter Jacket Auto-Add Upsell Target" product is set in the section settings, so nothing was auto-added.');
         }
       }
 
       addToCartBtn.disabled = true;
       const originalLabel = btnLabel.textContent;
       btnLabel.textContent = 'ADDING...';
+
+      if (TISSO_DEBUG_BONUS_ADD) {
+        console.log('[Tisso] itemsToPost:', itemsToPost);
+      }
 
       fetch('/cart/add.js', {
         method: 'POST',
@@ -210,9 +288,9 @@
         })
         .then(data => {
           closeModal();
-          // Let the rest of the theme (cart drawer/icon count) react without a full reload.
           document.dispatchEvent(new CustomEvent('cart:updated', { bubbles: true, detail: data }));
           document.dispatchEvent(new CustomEvent('cart:refresh', { bubbles: true }));
+          refreshCartUI();
         })
         .catch(err => {
           console.error(err);
@@ -235,7 +313,6 @@
     initAll();
   }
 
-  // Re-init after Theme Editor re-renders this section (product/setting changes)
   document.addEventListener('shopify:section:load', function (event) {
     const root = event.target.querySelector ? event.target.querySelector('[data-tisso-lookbook]') : null;
     if (root) initLookbook(root);
