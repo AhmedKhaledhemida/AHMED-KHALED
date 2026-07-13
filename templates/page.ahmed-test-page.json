@@ -22,10 +22,12 @@
             "alignment": "left",
             "type_preset": "h2",
             "font": "var(--font-primary--family)",
+            "font_size": "1rem",
             "line_height": "normal",
             "letter_spacing": "normal",
             "case": "none",
             "wrap": "pretty",
+            "text_color": "",
             "background": false,
             "background_color": "#00000026",
             "corner_radius": 0,
@@ -38,7 +40,9 @@
         },
         "page-content": {
           "type": "page-content",
-          "settings": {},
+          "settings": {
+            "text_color": ""
+          },
           "blocks": {}
         }
       },
@@ -46,6 +50,7 @@
         "heading",
         "page-content"
       ],
+      "disabled": true,
       "settings": {
         "content_direction": "column",
         "gap": 32,
@@ -53,9 +58,36 @@
         "padding-block-start": 40,
         "padding-block-end": 80
       }
+    },
+    "tisso_lookbook_BwR7wp": {
+      "type": "tisso-lookbook",
+      "name": "Tisso Lookbook Section Customizer Block Layout",
+      "settings": {
+        "heading": "Tisso vison in the wild",
+        "bonus_product": "",
+        "product_1": "black-leather-bag",
+        "top_1": 30,
+        "left_1": 85,
+        "product_2": "blue-silk-tuxedo",
+        "top_2": 32,
+        "left_2": 60,
+        "product_3": "chequered-red-shirt",
+        "top_3": 18,
+        "left_3": 86,
+        "product_4": "classic-leather-jacket",
+        "top_4": 63,
+        "left_4": 24,
+        "product_5": "classic-varsity-top",
+        "top_5": 66,
+        "left_5": 51,
+        "product_6": "dark-denim-top",
+        "top_6": 72,
+        "left_6": 90
+      }
     }
   },
   "order": [
-    "main"
+    "main",
+    "tisso_lookbook_BwR7wp"
   ]
 }
