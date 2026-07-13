@@ -607,19 +607,29 @@
       // Match the Color option (Black) and Size option (Medium) specifically,
       // rather than scanning all selected values indiscriminately. Falls back
       // to a value-only scan if the product doesn't use Color/Size option names.
-      // Matching uses "contains" rather than strict equality so values like
-      // "Jet Black" or "Medium (M)" still qualify, not just an exact "Black"/"Medium".
+      // Matching uses "contains" plus known abbreviations, so values like
+      // "Jet Black" or plain "M" / "MD" still qualify — not just an exact
+      // "Black" / "Medium" string.
       const colorKey = Object.keys(chosenSelections).find(k => /^colou?r$/i.test(k));
       const sizeKey = Object.keys(chosenSelections).find(k => /^size$/i.test(k));
 
+      function valueMeansBlack(v) {
+        const s = String(v).trim().toLowerCase();
+        return s.includes('black') || s === 'blk' || s === 'blk.';
+      }
+      function valueMeansMedium(v) {
+        const s = String(v).trim().toLowerCase();
+        return s.includes('medium') || s === 'm' || s === 'md' || s === 'med';
+      }
+
       let hasBlack, hasMedium;
       if (colorKey && sizeKey) {
-        hasBlack = String(chosenSelections[colorKey]).toLowerCase().includes('black');
-        hasMedium = String(chosenSelections[sizeKey]).toLowerCase().includes('medium');
+        hasBlack = valueMeansBlack(chosenSelections[colorKey]);
+        hasMedium = valueMeansMedium(chosenSelections[sizeKey]);
       } else {
-        const values = Object.values(chosenSelections).map(v => String(v).toLowerCase());
-        hasBlack = values.some(v => v.includes('black'));
-        hasMedium = values.some(v => v.includes('medium'));
+        const values = Object.values(chosenSelections);
+        hasBlack = values.some(valueMeansBlack);
+        hasMedium = values.some(valueMeansMedium);
       }
 
       if (TISSO_DEBUG_BONUS_ADD) {
