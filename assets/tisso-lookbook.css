@@ -1,6 +1,5 @@
-
+/* Tisso Lookbook Section Variables & Reset */
 .tisso-lookbook-section {
-  /* Design Tokens Mapping */
   --tisso-ink: #000000;
   --tisso-border-color: #000000;
   --tisso-bg-color: #ffffff;
@@ -11,7 +10,6 @@
   padding: 40px 20px;
 }
 
-/* Clear Reset Boundary to avoid parent global theme rule leaks */
 .tisso-lookbook-section *,
 .tisso-lookbook-section *::before,
 .tisso-lookbook-section *::after {
@@ -25,7 +23,7 @@
   color: #333333;
 }
 
-/* Responsive Grid Layout Blueprint Matrix */
+/* 6-Block Grid System */
 .tisso-lookbook__grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -58,7 +56,7 @@
   display: block;
 }
 
-/* Absolute Coordinate Overlay Pin Element Vector styling */
+/* Hotspot Pin Icon */
 .tisso-lookbook__hotspot {
   position: absolute;
   width: 28px;
@@ -74,7 +72,7 @@
   justify-content: center;
   cursor: pointer;
   transform: translate(-50%, -50%);
-  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background 0.2s ease;
+  transition: transform 0.2s, background 0.2s;
   z-index: 2;
   box-shadow: 0 2px 6px rgba(0,0,0,0.15);
 }
@@ -84,7 +82,7 @@
   background: #ffffff;
 }
 
-/* Modals & Overlays Stack Management Context */
+/* Custom Popup Modal Layout */
 .tisso-modal-overlay {
   position: fixed;
   inset: 0;
@@ -94,7 +92,6 @@
   justify-content: center;
   z-index: 2000;
   padding: 16px;
-  backdrop-filter: blur(2px);
 }
 
 .tisso-modal-overlay.tisso-active {
@@ -128,6 +125,7 @@
   z-index: 10;
 }
 
+/* Top Meta Section (Row Info Side-By-Side) */
 .tisso-modal__meta-row {
   display: flex;
   gap: 20px;
@@ -174,7 +172,7 @@
   margin: 0;
 }
 
-/* Variant Control Elements Matrix Formatting Blocks */
+/* Variant Render Styling Blocks */
 .tisso-option-group {
   margin-bottom: 20px;
 }
@@ -186,7 +184,7 @@
   margin-bottom: 8px;
 }
 
-/* Flexbox Swatch Controls View Formats */
+/* Colors Row List Grid View Blocks */
 .tisso-color-swatches {
   display: flex;
   gap: 1px;
@@ -204,9 +202,9 @@
   text-align: left;
   cursor: pointer;
   position: relative;
-  transition: padding 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+/* Vertical active selector edge strip matching layout */
 .tisso-color-btn.tisso-selected {
   padding-left: 20px;
 }
@@ -221,7 +219,7 @@
   background-color: #1a478a; /* Custom selection color indicator strip */
 }
 
-/* Select Form Layout Modifiers */
+/* Custom Size Picker Layout Select Form Box */
 .tisso-size-dropdown-wrapper {
   position: relative;
   width: 100%;
@@ -259,7 +257,7 @@
   stroke-width: 2;
 }
 
-/* CTA Transactional Subsystems Elements layout */
+/* Call To Action Block Action Button layout format */
 .tisso-btn-add-to-cart {
   width: 100%;
   background: #000000;
