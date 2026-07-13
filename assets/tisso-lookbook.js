@@ -21,8 +21,6 @@
     const errorMsg = root.querySelector('[data-error-msg]');
 
     // Bonus-product config comes from data attributes rendered by Liquid on
-    // the root element (see sections/tisso-lookbook.liquid), since this file
-    // is a static asset and is not Liquid-parsed.
     const bonusVariantIdRaw = root.dataset.bonusVariantId || '';
     const bonusVariantId = bonusVariantIdRaw ? Number(bonusVariantIdRaw) : null;
     const bonusProductConfigured = root.dataset.bonusConfigured === 'true';
@@ -51,7 +49,6 @@
       errorMsg.style.display = 'none';
 
       if (TISSO_DEBUG_BONUS_ADD) {
-        // Confirms the ACTUAL option names/values Shopify is sending for this
         // product, so you can check they really are "Color"/"Black" and
         // "Size"/"Medium" and not something like "Farve"/"Sort" or "Sz"/"M".
         console.log('[Tisso] product.options for "' + product.title + '":', JSON.parse(JSON.stringify(product.options)));
@@ -154,15 +151,6 @@
       if (e.target === modalOverlay) closeModal();
     });
 
-    // Best-effort, theme-agnostic attempt to make the cart UI reflect the
-    // new item(s) without a manual page refresh. There is no universal API
-    // for "open my theme's cart drawer" across Shopify themes, so this tries
-    // two common patterns:
-    //  1. Directly patch any element that looks like a cart-count badge.
-    //  2. Click the theme's own cart icon/link, so whatever native JS the
-    //     theme already has (fetch + render drawer, etc.) runs itself.
-    // If neither matches your theme's markup, tell me your theme name or
-    // paste the cart-icon HTML and I'll wire this exactly instead of guessing.
     function refreshCartUI() {
       fetch('/cart.js')
         .then(res => res.json())
@@ -303,10 +291,6 @@
         .then(data => {
           closeModal();
 
-          // Let the rest of the theme (cart drawer/icon count) react without a full reload.
-          // Custom events only help if the theme happens to listen for these names —
-          // many themes use their own internal pub/sub instead, so this alone is
-          // often not enough (see refreshCartUI below for a more universal fallback).
           document.dispatchEvent(new CustomEvent('cart:updated', { bubbles: true, detail: data }));
           document.dispatchEvent(new CustomEvent('cart:refresh', { bubbles: true }));
 
