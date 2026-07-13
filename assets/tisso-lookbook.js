@@ -1,10 +1,6 @@
 (function () {
-  // Set to true while debugging the Black+Medium bonus-add rule, then flip
-  // back to false for production — it logs the decision path to console.
   var TISSO_DEBUG_BONUS_ADD = true;
 
-  // Guard against the init script being parsed more than once if the theme
-  // editor re-injects section markup without a full page reload.
   function initLookbook(root) {
     if (root.dataset.tissoInitialized === 'true') return;
     root.dataset.tissoInitialized = 'true';
@@ -208,8 +204,6 @@
         const el = document.querySelector(sel);
         if (el) {
           if (TISSO_DEBUG_BONUS_ADD) console.log('[Tisso] attempting to trigger theme cart UI via:', sel);
-          // Some themes bind their own click handler that fetches sections
-          // and opens the drawer with fresh data — this lets that run.
           el.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
           break;
         }
@@ -322,10 +316,6 @@
         .then(data => {
           closeModal();
 
-          // Let the rest of the theme (cart drawer/icon count) react without a full reload.
-          // Custom events only help if the theme happens to listen for these names —
-          // many themes use their own internal pub/sub instead, so this alone is
-          // often not enough (see refreshCartUI below for a more universal fallback).
           document.dispatchEvent(new CustomEvent('cart:updated', { bubbles: true, detail: data }));
           document.dispatchEvent(new CustomEvent('cart:refresh', { bubbles: true }));
 
