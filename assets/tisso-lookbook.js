@@ -191,8 +191,6 @@
         const el = document.querySelector(sel);
         if (el) {
           if (TISSO_DEBUG_BONUS_ADD) console.log('[Tisso] attempting to trigger theme cart UI via:', sel);
-          // Some themes bind their own click handler that fetches sections
-          // and opens the drawer with fresh data — this lets that run.
           el.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
           break;
         }
