@@ -1,14 +1,307 @@
-{{ 'tisso-lookbook.css' | asset_url | stylesheet_tag }}
+<style>
+/* Tisso Lookbook Section Variables & Reset */
+.tisso-lookbook-section {
+  --tisso-ink: #000000;
+  --tisso-border-color: #000000;
+  --tisso-bg-color: #ffffff;
+  --tisso-font-family: Arial, sans-serif;
 
-<div
-  class="tisso-lookbook-section"
-  data-tisso-lookbook
-  data-section-id="{{ section.id }}"
-  {%- if section.settings.bonus_product != blank -%}
-  data-bonus-variant-id="{{ section.settings.bonus_product.first_available_variant.id }}"
-  data-bonus-product-id="{{ section.settings.bonus_product.id }}"
-  {%- endif -%}
->
+  position: relative;
+  font-family: var(--tisso-font-family);
+  padding: 40px 20px;
+}
+
+.tisso-lookbook-section *,
+.tisso-lookbook-section *::before,
+.tisso-lookbook-section *::after {
+  box-sizing: border-box;
+}
+
+.tisso-lookbook__title {
+  font-size: 24px;
+  font-weight: normal;
+  margin-bottom: 24px;
+  color: #333333;
+}
+
+/* 6-Block Grid System */
+.tisso-lookbook__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+@media (max-width: 768px) {
+  .tisso-lookbook__grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 480px) {
+  .tisso-lookbook__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.tisso-lookbook__tile {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  background-color: #f5f5f5;
+  overflow: hidden;
+}
+
+.tisso-lookbook__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Hotspot Pin Icon */
+.tisso-lookbook__hotspot {
+  position: absolute;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  color: #000;
+  font-size: 16px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transform: translate(-50%, -50%);
+  transition: transform 0.2s, background 0.2s;
+  z-index: 2;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+
+.tisso-lookbook__hotspot:hover {
+  transform: translate(-50%, -50%) scale(1.15);
+  background: #ffffff;
+}
+
+/* Custom Popup Modal Layout */
+.tisso-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  padding: 16px;
+}
+
+.tisso-modal-overlay.tisso-active {
+  display: flex;
+}
+
+.tisso-modal-card {
+  background: var(--tisso-bg-color);
+  width: 100%;
+  max-width: 520px;
+  position: relative;
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.25);
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.tisso-modal__close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: var(--tisso-ink);
+  line-height: 1;
+  padding: 4px;
+  z-index: 10;
+}
+
+/* Top Meta Section (Row Info Side-By-Side) */
+.tisso-modal__meta-row {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.tisso-modal__img-box {
+  width: 160px;
+  height: 160px;
+  flex-shrink: 0;
+  background: #f9f9f9;
+}
+
+.tisso-modal__img-box img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.tisso-modal__text-box {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.tisso-modal__title {
+  font-size: 24px;
+  font-weight: normal;
+  margin: 0 0 12px 0;
+  color: var(--tisso-ink);
+}
+
+.tisso-modal__price {
+  font-size: 20px;
+  font-weight: normal;
+  margin: 0 0 16px 0;
+  color: var(--tisso-ink);
+}
+
+.tisso-modal__description {
+  font-size: 14px;
+  line-height: 1.45;
+  color: #333333;
+  margin: 0;
+}
+
+/* Variant Render Styling Blocks */
+.tisso-option-group {
+  margin-bottom: 20px;
+}
+
+.tisso-option-label {
+  display: block;
+  font-size: 16px;
+  color: var(--tisso-ink);
+  margin-bottom: 8px;
+}
+
+/* Colors Row List Grid View Blocks */
+.tisso-color-swatches {
+  display: flex;
+  gap: 1px;
+  background-color: var(--tisso-border-color);
+  border: 1px solid var(--tisso-border-color);
+}
+
+.tisso-color-btn {
+  flex: 1;
+  background: #fff;
+  border: none;
+  padding: 14px 16px;
+  font-size: 18px;
+  color: var(--tisso-ink);
+  text-align: left;
+  cursor: pointer;
+  position: relative;
+}
+
+/* Vertical active selector edge strip matching layout */
+.tisso-color-btn.tisso-selected {
+  padding-left: 20px;
+}
+
+.tisso-color-btn.tisso-selected::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background-color: #1a478a; /* Custom selection color indicator strip */
+}
+
+/* Custom Size Picker Layout Select Form Box */
+.tisso-size-dropdown-wrapper {
+  position: relative;
+  width: 100%;
+  border: 1px solid var(--tisso-border-color);
+  display: flex;
+}
+
+.tisso-size-native-select {
+  width: 100%;
+  padding: 14px 16px;
+  font-size: 16px;
+  border: none;
+  background: transparent;
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+  color: var(--tisso-ink);
+}
+
+.tisso-size-arrow-zone {
+  width: 50px;
+  border-left: 1px solid var(--tisso-border-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  background: #fff;
+}
+
+.tisso-size-arrow-zone svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+}
+
+/* Call To Action Block Action Button layout format */
+.tisso-btn-add-to-cart {
+  width: 100%;
+  background: #000000;
+  color: #ffffff;
+  border: 1px solid #000000;
+  padding: 16px;
+  font-size: 16px;
+  font-weight: bold;
+  letter-spacing: 1px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  margin-top: 10px;
+  transition: background 0.2s, color 0.2s;
+}
+
+.tisso-btn-add-to-cart:hover {
+  background: #ffffff;
+  color: #000000;
+}
+
+.tisso-btn-add-to-cart:disabled {
+  background: #666666;
+  border-color: #666666;
+  cursor: not-allowed;
+}
+
+.tisso-btn-add-to-cart .tisso-arrow-icon {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.tisso-validation-msg {
+  color: #cc0000;
+  font-size: 13px;
+  margin-bottom: 10px;
+  display: none;
+}
+</style>
+
+<div class="tisso-lookbook-section" data-tisso-lookbook data-section-id="{{ section.id }}">
   <h2 class="tisso-lookbook__title">{{ section.settings.heading }}</h2>
 
   <div class="tisso-lookbook__grid">
@@ -83,7 +376,283 @@
     </div>
   </div>
 </div>
-<script src="{{ 'tisso-lookbook.js' | asset_url }}" defer></script>
+
+<script>
+(function () {
+  // Set to true while debugging the Black+Medium bonus-add rule, then flip
+  // back to false for production — it logs the decision path to console.
+  var TISSO_DEBUG_BONUS_ADD = true;
+
+  // Guard against the init script being parsed more than once if the theme
+  // editor re-injects section markup without a full page reload.
+  function initLookbook(root) {
+    if (root.dataset.tissoInitialized === 'true') return;
+    root.dataset.tissoInitialized = 'true';
+
+    const modalOverlay = root.querySelector('[data-modal-overlay]');
+    const modalClose = root.querySelector('[data-modal-close]');
+    const imgTarget = root.querySelector('[data-modal-img]');
+    const titleTarget = root.querySelector('[data-modal-title]');
+    const priceTarget = root.querySelector('[data-modal-price]');
+    const descTarget = root.querySelector('[data-modal-desc]');
+    const optionsContainer = root.querySelector('[data-options-target-container]');
+    const addToCartBtn = root.querySelector('[data-add-to-cart-action]');
+    const btnLabel = root.querySelector('[data-btn-label]');
+    const errorMsg = root.querySelector('[data-error-msg]');
+
+    let activeProductData = null;
+    let chosenSelections = {};
+
+    root.querySelectorAll('[data-hotspot-handle]').forEach(hotspot => {
+      hotspot.addEventListener('click', function () {
+        const handle = this.getAttribute('data-hotspot-handle');
+        const dataNode = root.querySelector(`[data-product-json="${handle}"]`);
+        if (!dataNode) return;
+
+        try {
+          activeProductData = JSON.parse(dataNode.textContent);
+        } catch (e) {
+          console.error('Tisso Lookbook: could not parse product JSON', e);
+          return;
+        }
+        renderModalContents(activeProductData);
+      });
+    });
+
+    function renderModalContents(product) {
+      chosenSelections = {};
+      errorMsg.style.display = 'none';
+
+      imgTarget.src = product.image;
+      imgTarget.alt = product.title;
+      titleTarget.textContent = product.title;
+      priceTarget.textContent = product.price;
+      descTarget.textContent = product.description;
+
+      optionsContainer.innerHTML = '';
+
+      product.options.forEach(option => {
+        const groupEl = document.createElement('div');
+        groupEl.className = 'tisso-option-group';
+
+        const labelEl = document.createElement('label');
+        labelEl.className = 'tisso-option-label';
+        labelEl.textContent = option.name;
+        groupEl.appendChild(labelEl);
+
+        const normalizedName = option.name.toLowerCase();
+
+        if (normalizedName === 'color' || normalizedName === 'colour') {
+          const swatchesContainer = document.createElement('div');
+          swatchesContainer.className = 'tisso-color-swatches';
+
+          option.values.forEach((val, idx) => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'tisso-color-btn';
+            btn.textContent = val;
+
+            if (idx === 0) {
+              btn.classList.add('tisso-selected');
+              chosenSelections[option.name] = val;
+            }
+
+            btn.addEventListener('click', function () {
+              swatchesContainer.querySelectorAll('.tisso-color-btn').forEach(b => b.classList.remove('tisso-selected'));
+              this.classList.add('tisso-selected');
+              chosenSelections[option.name] = val;
+              errorMsg.style.display = 'none';
+            });
+
+            swatchesContainer.appendChild(btn);
+          });
+          groupEl.appendChild(swatchesContainer);
+
+        } else {
+          const selectWrapper = document.createElement('div');
+          selectWrapper.className = 'tisso-size-dropdown-wrapper';
+
+          const select = document.createElement('select');
+          select.className = 'tisso-size-native-select';
+
+          const placeholder = document.createElement('option');
+          placeholder.value = '';
+          placeholder.textContent = 'Choose your ' + normalizedName;
+          select.appendChild(placeholder);
+
+          option.values.forEach(val => {
+            const opt = document.createElement('option');
+            opt.value = val;
+            opt.textContent = val;
+            select.appendChild(opt);
+          });
+
+          select.addEventListener('change', function () {
+            if (this.value) {
+              chosenSelections[option.name] = this.value;
+            } else {
+              delete chosenSelections[option.name];
+            }
+            errorMsg.style.display = 'none';
+          });
+
+          const arrowZone = document.createElement('div');
+          arrowZone.className = 'tisso-size-arrow-zone';
+          arrowZone.innerHTML = `<svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+
+          selectWrapper.appendChild(select);
+          selectWrapper.appendChild(arrowZone);
+          groupEl.appendChild(selectWrapper);
+        }
+
+        optionsContainer.appendChild(groupEl);
+      });
+
+      modalOverlay.classList.add('tisso-active');
+    }
+
+    function closeModal() {
+      modalOverlay.classList.remove('tisso-active');
+      activeProductData = null;
+    }
+    modalClose.addEventListener('click', closeModal);
+    modalOverlay.addEventListener('click', function (e) {
+      if (e.target === modalOverlay) closeModal();
+    });
+
+    addToCartBtn.addEventListener('click', function () {
+      if (!activeProductData) return;
+
+      const totalOptionsNeeded = activeProductData.options.length;
+      const selectedCount = Object.keys(chosenSelections).length;
+
+      if (selectedCount < totalOptionsNeeded) {
+        errorMsg.style.display = 'block';
+        return;
+      }
+
+      const matchedVariant = activeProductData.variants.find(variant => {
+        return activeProductData.options.every((opt, index) => {
+          return variant.options[index] === chosenSelections[opt.name];
+        });
+      });
+
+      if (TISSO_DEBUG_BONUS_ADD) {
+        console.log('[Tisso] chosenSelections:', chosenSelections);
+        console.log('[Tisso] matchedVariant:', matchedVariant);
+      }
+
+      if (!matchedVariant || !matchedVariant.available) {
+        alert('Selected variant option pattern combination is currently unavailable.');
+        return;
+      }
+
+      const itemsToPost = [{
+        id: matchedVariant.id,
+        quantity: 1
+      }];
+
+      // Match the Color option (Black) and Size option (Medium) specifically,
+      // rather than scanning all selected values indiscriminately. Falls back
+      // to a value-only scan if the product doesn't use Color/Size option names.
+      // Matching uses "contains" rather than strict equality so values like
+      // "Jet Black" or "Medium (M)" still qualify, not just an exact "Black"/"Medium".
+      const colorKey = Object.keys(chosenSelections).find(k => /^colou?r$/i.test(k));
+      const sizeKey = Object.keys(chosenSelections).find(k => /^size$/i.test(k));
+
+      let hasBlack, hasMedium;
+      if (colorKey && sizeKey) {
+        hasBlack = String(chosenSelections[colorKey]).toLowerCase().includes('black');
+        hasMedium = String(chosenSelections[sizeKey]).toLowerCase().includes('medium');
+      } else {
+        const values = Object.values(chosenSelections).map(v => String(v).toLowerCase());
+        hasBlack = values.some(v => v.includes('black'));
+        hasMedium = values.some(v => v.includes('medium'));
+      }
+
+      if (TISSO_DEBUG_BONUS_ADD) {
+        console.log('[Tisso] colorKey:', colorKey, '| sizeKey:', sizeKey);
+        console.log('[Tisso] hasBlack:', hasBlack, '| hasMedium:', hasMedium);
+      }
+
+      {%- if section.settings.bonus_product != blank -%}
+      if (hasBlack && hasMedium) {
+        const bonusVariantId = {{ section.settings.bonus_product.first_available_variant.id | json }};
+        const bonusProductId = {{ section.settings.bonus_product.id | json }};
+        const alreadyInPayload = itemsToPost.some(item => item.id === bonusVariantId);
+
+        if (TISSO_DEBUG_BONUS_ADD) {
+          console.log('[Tisso] bonus_product configured. bonusVariantId:', bonusVariantId, '| alreadyInPayload:', alreadyInPayload);
+        }
+
+        if (!bonusVariantId) {
+          console.warn('[Tisso Lookbook] Black+Medium matched, but the configured bonus product ("Soft Winter Jacket") has no available variant to add — it may be sold out or all variants unpublished.');
+        } else if (!alreadyInPayload) {
+          itemsToPost.push({
+            id: bonusVariantId,
+            quantity: 1
+          });
+        }
+      }
+      {%- else -%}
+      if (hasBlack && hasMedium) {
+        console.warn('[Tisso Lookbook] Black+Medium matched, but no "Soft Winter Jacket Auto-Add Upsell Target" product is set in the section settings, so nothing was auto-added. Set the "bonus_product" setting in the theme customizer.');
+      }
+      {%- endif -%}
+
+      addToCartBtn.disabled = true;
+      const originalLabel = btnLabel.textContent;
+      btnLabel.textContent = 'ADDING...';
+
+      if (TISSO_DEBUG_BONUS_ADD) {
+        console.log('[Tisso] itemsToPost:', itemsToPost);
+      }
+
+      fetch('/cart/add.js', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+        body: JSON.stringify({ items: itemsToPost })
+      })
+        .then(response => {
+          if (!response.ok) {
+            return response.json().then(err => { throw new Error(err.message || 'Network error adding to cart.'); });
+          }
+          return response.json();
+        })
+        .then(data => {
+          closeModal();
+          // Let the rest of the theme (cart drawer/icon count) react without a full reload.
+          document.dispatchEvent(new CustomEvent('cart:updated', { bubbles: true, detail: data }));
+          document.dispatchEvent(new CustomEvent('cart:refresh', { bubbles: true }));
+        })
+        .catch(err => {
+          console.error(err);
+          alert(err.message || 'Error updating cart.');
+        })
+        .finally(() => {
+          addToCartBtn.disabled = false;
+          btnLabel.textContent = originalLabel;
+        });
+    });
+  }
+
+  function initAll() {
+    document.querySelectorAll('[data-tisso-lookbook]').forEach(initLookbook);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initAll);
+  } else {
+    initAll();
+  }
+
+  // Re-init after Theme Editor re-renders this section (product/setting changes)
+  document.addEventListener('shopify:section:load', function (event) {
+    const root = event.target.querySelector ? event.target.querySelector('[data-tisso-lookbook]') : null;
+    if (root) initLookbook(root);
+  });
+})();
+</script>
 
 {% schema %}
 {
