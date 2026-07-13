@@ -21,6 +21,8 @@
     const errorMsg = root.querySelector('[data-error-msg]');
 
     // Bonus-product config comes from data attributes rendered by Liquid on
+    // the root element (see sections/tisso-lookbook.liquid), since this file
+    // is a static asset and is not Liquid-parsed.
     const bonusVariantIdRaw = root.dataset.bonusVariantId || '';
     const bonusVariantId = bonusVariantIdRaw ? Number(bonusVariantIdRaw) : null;
     const bonusProductConfigured = root.dataset.bonusConfigured === 'true';
@@ -49,6 +51,7 @@
       errorMsg.style.display = 'none';
 
       if (TISSO_DEBUG_BONUS_ADD) {
+        // Confirms the ACTUAL option names/values Shopify is sending for this
         // product, so you can check they really are "Color"/"Black" and
         // "Size"/"Medium" and not something like "Farve"/"Sort" or "Sz"/"M".
         console.log('[Tisso] product.options for "' + product.title + '":', JSON.parse(JSON.stringify(product.options)));
@@ -62,7 +65,24 @@
 
       optionsContainer.innerHTML = '';
 
-      product.options.forEach(option => {
+      // Force display order: Color first, Size second, anything else after —
+      // regardless of the order Shopify returns options in for this product.
+      function optionSortWeight(name) {
+        const n = name.toLowerCase();
+        if (n === 'color' || n === 'colour') return 0;
+        if (n === 'size') return 1;
+        return 2;
+      }
+      const sortedOptions = product.options
+        .map((option, originalIndex) => ({ option, originalIndex }))
+        .sort((a, b) => {
+          const weightDiff = optionSortWeight(a.option.name) - optionSortWeight(b.option.name);
+          if (weightDiff !== 0) return weightDiff;
+          return a.originalIndex - b.originalIndex; // stable for ties / other options
+        })
+        .map(entry => entry.option);
+
+      sortedOptions.forEach(option => {
         const groupEl = document.createElement('div');
         groupEl.className = 'tisso-option-group';
 
@@ -151,6 +171,15 @@
       if (e.target === modalOverlay) closeModal();
     });
 
+    // Best-effort, theme-agnostic attempt to make the cart UI reflect the
+    // new item(s) without a manual page refresh. There is no universal API
+    // for "open my theme's cart drawer" across Shopify themes, so this tries
+    // two common patterns:
+    //  1. Directly patch any element that looks like a cart-count badge.
+    //  2. Click the theme's own cart icon/link, so whatever native JS the
+    //     theme already has (fetch + render drawer, etc.) runs itself.
+    // If neither matches your theme's markup, tell me your theme name or
+    // paste the cart-icon HTML and I'll wire this exactly instead of guessing.
     function refreshCartUI() {
       fetch('/cart.js')
         .then(res => res.json())
@@ -179,6 +208,8 @@
         const el = document.querySelector(sel);
         if (el) {
           if (TISSO_DEBUG_BONUS_ADD) console.log('[Tisso] attempting to trigger theme cart UI via:', sel);
+          // Some themes bind their own click handler that fetches sections
+          // and opens the drawer with fresh data — this lets that run.
           el.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
           break;
         }
@@ -291,6 +322,10 @@
         .then(data => {
           closeModal();
 
+          // Let the rest of the theme (cart drawer/icon count) react without a full reload.
+          // Custom events only help if the theme happens to listen for these names —
+          // many themes use their own internal pub/sub instead, so this alone is
+          // often not enough (see refreshCartUI below for a more universal fallback).
           document.dispatchEvent(new CustomEvent('cart:updated', { bubbles: true, detail: data }));
           document.dispatchEvent(new CustomEvent('cart:refresh', { bubbles: true }));
 
