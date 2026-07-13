@@ -59,6 +59,23 @@
         "padding-block-end": 80
       }
     },
+    "custom_banner_EGfkEC": {
+      "type": "Custom-banner",
+      "name": "Full Custom Gift Banner",
+      "settings": {
+        "desktop_image": "shopify://shop_images/herobanner_canvas.webp",
+        "mobile_image": "shopify://shop_images/herobanner_canvas.webp",
+        "logo_text": "TISSO VISON",
+        "announcement_text": "Find the ideal gift for your loved ones.",
+        "header_button_text": "CHOOSE GIFT",
+        "header_button_link": "",
+        "main_heading": "The Gift Guide",
+        "main_description": "Discover Joy: Your Ultimate Holiday Gift Destination.\nExplore our curated selection and find the perfect gifts to delight your loved ones this holiday season.",
+        "main_button_text": "SHOP NOW",
+        "main_button_link": "",
+        "footer_text": "SUSTAINABLE, ETHICALLY MADE CLOTHES IN SIZES XXS TO 6XL"
+      }
+    },
     "tisso_lookbook_BwR7wp": {
       "type": "tisso-lookbook",
       "name": "Tisso Lookbook Section Customizer Block Layout",
@@ -88,6 +105,7 @@
   },
   "order": [
     "main",
+    "custom_banner_EGfkEC",
     "tisso_lookbook_BwR7wp"
   ]
 }
