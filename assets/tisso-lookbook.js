@@ -1,320 +1,384 @@
+
 (function () {
-  var TISSO_DEBUG_BONUS_ADD = true;
+  'use strict';
 
-  function initLookbook(root) {
-    if (root.dataset.tissoInitialized === 'true') return;
-    root.dataset.tissoInitialized = 'true';
+  // Toggle instrumentation pipeline visibility metrics for validation tracking
+  var TISSO_DEBUG_BONUS_ADD = false;
 
-    const sectionId = root.getAttribute('data-section-id');
-    const configNode = root.querySelector(`[data-tisso-section-config="${sectionId}"]`);
-    let sectionConfig = { bonusVariantId: null, bonusProductId: null };
+  /**
+   * Orchestrates section instance encapsulation isolation boundary elements.
+   * @param {HTMLElement} rootComponentNode - Root instance element node block container.
+   */
+  function initLookbook(rootComponentNode) {
+    if (rootComponentNode.dataset.tissoInitialized === 'true') return;
+    rootComponentNode.dataset.tissoInitialized = 'true';
 
-    if (configNode) {
+    // Parse Runtime Environment configuration data layer objects injected from Liquid compilation
+    const sectionId = rootComponentNode.getAttribute('data-section-id');
+    const dynamicConfigNode = rootComponentNode.querySelector(`[data-tisso-section-config="${sectionId}"]`);
+    let sectionRuntimeConfig = { bonusVariantId: null, bonusProductId: null };
+
+    if (dynamicConfigNode) {
       try {
-        sectionConfig = JSON.parse(configNode.textContent);
-      } catch(e) {
-        console.error('Tisso Lookbook: Could not parse section dynamic config runtime variables', e);
+        sectionRuntimeConfig = JSON.parse(dynamicConfigNode.textContent);
+      } catch(error) {
+        console.error('[Tisso Architecture Failure] Failed to parse dynamic layout schema configuration context mapping parameters:', error);
       }
     }
 
-    const modalOverlay = root.querySelector('[data-modal-overlay]');
-    const modalClose = root.querySelector('[data-modal-close]');
-    const imgTarget = root.querySelector('[data-modal-img]');
-    const titleTarget = root.querySelector('[data-modal-title]');
-    const priceTarget = root.querySelector('[data-modal-price]');
-    const descTarget = root.querySelector('[data-modal-desc]');
-    const optionsContainer = root.querySelector('[data-options-target-container]');
-    const addToCartBtn = root.querySelector('[data-add-to-cart-action]');
-    const btnLabel = root.querySelector('[data-btn-label]');
-    const errorMsg = root.querySelector('[data-error-msg]');
+    // Cache component target elements layout nodes reference matrix maps
+    const elementsCache = {
+      modalOverlay: rootComponentNode.querySelector('[data-modal-overlay]'),
+      modalClose: rootComponentNode.querySelector('[data-modal-close]'),
+      imgTarget: rootComponentNode.querySelector('[data-modal-img]'),
+      titleTarget: rootComponentNode.querySelector('[data-modal-title]'),
+      priceTarget: rootComponentNode.querySelector('[data-modal-price]'),
+      descTarget: rootComponentNode.querySelector('[data-modal-desc]'),
+      optionsContainer: rootComponentNode.querySelector('[data-options-target-container]'),
+      addToCartBtn: rootComponentNode.querySelector('[data-add-to-cart-action]'),
+      btnLabel: rootComponentNode.querySelector('[data-btn-label]'),
+      errorMsg: rootComponentNode.querySelector('[data-error-msg]')
+    };
 
-    let activeProductData = null;
-    let chosenSelections = {};
+    // Functional Transactional Local Component State Memory Buffer Struct
+    let transactionalState = {
+      activeProductData: null,
+      chosenSelections: {}
+    };
 
-    root.querySelectorAll('[data-hotspot-handle]').forEach(hotspot => {
-      hotspot.addEventListener('click', function () {
+    // Bind event delegators across hotspot vectors
+    rootComponentNode.querySelectorAll('[data-hotspot-handle]').forEach(hotspotNode => {
+      hotspotNode.addEventListener('click', function (event) {
+        event.preventDefault();
         const handle = this.getAttribute('data-hotspot-handle');
-        const dataNode = root.querySelector(`[data-product-json="${handle}"]`);
+        const dataNode = rootComponentNode.querySelector(`[data-product-json="${handle}"]`);
         if (!dataNode) return;
 
         try {
-          activeProductData = JSON.parse(dataNode.textContent);
-        } catch (e) {
-          console.error('Tisso Lookbook: could not parse product JSON', e);
+          transactionalState.activeProductData = JSON.parse(dataNode.textContent);
+        } catch (error) {
+          console.error('[Tisso Parsing Exception] Malformed localized data matrix element node map structure:', error);
           return;
         }
-        renderModalContents(activeProductData);
+        renderModalContents(transactionalState.activeProductData);
       });
     });
 
-    function renderModalContents(product) {
-      chosenSelections = {};
-      errorMsg.style.display = 'none';
+    /**
+     * Hydrates and opens the option configuration transactional layer window modal.
+     * @param {Object} productMatrixObject - Instantiated deserialized local structural schema configuration properties object map data.
+     */
+    function renderModalContents(productMatrixObject) {
+      transactionalState.chosenSelections = {};
+      elementsCache.errorMsg.style.display = 'none';
 
       if (TISSO_DEBUG_BONUS_ADD) {
-        console.log('[Tisso] product.options for "' + product.title + '":', JSON.parse(JSON.stringify(product.options)));
+        console.log('[Tisso Instrumentation Core] Hydrating product target parameters layout definition arrays:', JSON.parse(JSON.stringify(productMatrixObject.options)));
       }
 
-      imgTarget.src = product.image;
-      imgTarget.alt = product.title;
-      titleTarget.textContent = product.title;
-      priceTarget.textContent = product.price;
-      descTarget.textContent = product.description;
+      // Populate core imagery text contexts elements structural fields
+      elementsCache.imgTarget.src = productMatrixObject.image;
+      elementsCache.imgTarget.alt = productMatrixObject.title;
+      elementsCache.titleTarget.textContent = productMatrixObject.title;
+      elementsCache.priceTarget.textContent = productMatrixObject.price;
+      elementsCache.descTarget.textContent = productMatrixObject.description;
 
-      optionsContainer.innerHTML = '';
+      // Purge historic dynamically drawn interactive input fields fragments elements nodes workspace memory
+      elementsCache.optionsContainer.innerHTML = '';
 
-      product.options.forEach(option => {
-        const groupEl = document.createElement('div');
-        groupEl.className = 'tisso-option-group';
+      // Construct and instantiate dynamic controller inputs variations blocks layouts structures components elements 
+      productMatrixObject.options.forEach(optionSchema => {
+        const groupContainer = document.createElement('div');
+        groupContainer.className = 'tisso-option-group';
 
-        const labelEl = document.createElement('label');
-        labelEl.className = 'tisso-option-label';
-        labelEl.textContent = option.name;
-        groupEl.appendChild(labelEl);
+        const labelElement = document.createElement('label');
+        labelElement.className = 'tisso-option-label';
+        labelElement.textContent = optionSchema.name;
+        groupContainer.appendChild(labelElement);
 
-        const normalizedName = option.name.toLowerCase();
+        const normalizedKeyName = optionSchema.name.toLowerCase();
 
-        if (normalizedName === 'color' || normalizedName === 'colour') {
+        // Branching controller visualization strategy patterns block definitions structure
+        if (normalizedKeyName === 'color' || normalizedKeyName === 'colour') {
           const swatchesContainer = document.createElement('div');
           swatchesContainer.className = 'tisso-color-swatches';
 
-          option.values.forEach((val, idx) => {
-            const btn = document.createElement('button');
-            btn.type = 'button';
-            btn.className = 'tisso-color-btn';
-            btn.textContent = val;
+          optionSchema.values.forEach((valueString, zeroIndexOffsetValue) => {
+            const swatchButtonElement = document.createElement('button');
+            swatchButtonElement.type = 'button';
+            swatchButtonElement.className = 'tisso-color-btn';
+            swatchButtonElement.textContent = valueString;
 
-            if (idx === 0) {
-              btn.classList.add('tisso-selected');
-              chosenSelections[option.name] = val;
+            // Enforce explicit single deterministic choice default fallbacks array assignments indexes
+            if (zeroIndexOffsetValue === 0) {
+              swatchButtonElement.classList.add('tisso-selected');
+              transactionalState.chosenSelections[optionSchema.name] = valueString;
             }
 
-            btn.addEventListener('click', function () {
-              swatchesContainer.querySelectorAll('.tisso-color-btn').forEach(b => b.classList.remove('tisso-selected'));
+            swatchButtonElement.addEventListener('click', function (event) {
+              event.preventDefault();
+              swatchesContainer.querySelectorAll('.tisso-color-btn').forEach(buttonNode => buttonNode.classList.remove('tisso-selected'));
               this.classList.add('tisso-selected');
-              chosenSelections[option.name] = val;
-              errorMsg.style.display = 'none';
+              transactionalState.chosenSelections[optionSchema.name] = valueString;
+              elementsCache.errorMsg.style.display = 'none';
             });
 
-            swatchesContainer.appendChild(btn);
+            swatchesContainer.appendChild(swatchButtonElement);
           });
-          groupEl.appendChild(swatchesContainer);
+          groupContainer.appendChild(swatchesContainer);
 
         } else {
+          // Fallback Strategy: Functional Standard Dynamic Interface Control Dropdowns elements selector fields structures
           const selectWrapper = document.createElement('div');
           selectWrapper.className = 'tisso-size-dropdown-wrapper';
 
-          const select = document.createElement('select');
-          select.className = 'tisso-size-native-select';
+          const nativeSelectElement = document.createElement('select');
+          nativeSelectElement.className = 'tisso-size-native-select';
 
-          const placeholder = document.createElement('option');
-          placeholder.value = '';
-          placeholder.textContent = 'Choose your ' + normalizedName;
-          select.appendChild(placeholder);
+          const nativePlaceholderOption = document.createElement('option');
+          nativePlaceholderOption.value = '';
+          nativePlaceholderOption.textContent = `Choose your ${normalizedKeyName}`;
+          nativeSelectElement.appendChild(nativePlaceholderOption);
 
-          option.values.forEach(val => {
-            const opt = document.createElement('option');
-            opt.value = val;
-            opt.textContent = val;
-            select.appendChild(opt);
+          optionSchema.values.forEach(valueString => {
+            const selectOptionNodeElement = document.createElement('option');
+            selectOptionNodeElement.value = valueString;
+            selectOptionNodeElement.textContent = valueString;
+            nativeSelectElement.appendChild(selectOptionNodeElement);
           });
 
-          select.addEventListener('change', function () {
+          nativeSelectElement.addEventListener('change', function () {
             if (this.value) {
-              chosenSelections[option.name] = this.value;
+              transactionalState.chosenSelections[optionSchema.name] = this.value;
             } else {
-              delete chosenSelections[option.name];
+              delete transactionalState.chosenSelections[optionSchema.name];
             }
-            errorMsg.style.display = 'none';
+            elementsCache.errorMsg.style.display = 'none';
           });
 
-          const arrowZone = document.createElement('div');
-          arrowZone.className = 'tisso-size-arrow-zone';
-          arrowZone.innerHTML = `<svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+          const decorativeArrowZoneContainer = document.createElement('div');
+          decorativeArrowZoneContainer.className = 'tisso-size-arrow-zone';
+          decorativeArrowZoneContainer.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 
-          selectWrapper.appendChild(select);
-          selectWrapper.appendChild(arrowZone);
-          groupEl.appendChild(selectWrapper);
+          selectWrapper.appendChild(nativeSelectElement);
+          selectWrapper.appendChild(decorativeArrowZoneContainer);
+          groupContainer.appendChild(selectWrapper);
         }
 
-        optionsContainer.appendChild(groupEl);
+        elementsCache.optionsContainer.appendChild(groupContainer);
       });
 
-      modalOverlay.classList.add('tisso-active');
+      elementsCache.modalOverlay.classList.add('tisso-active');
+      elementsCache.modalOverlay.setAttribute('aria-hidden', 'false');
     }
 
     function closeModal() {
-      modalOverlay.classList.remove('tisso-active');
-      activeProductData = null;
+      elementsCache.modalOverlay.classList.remove('tisso-active');
+      elementsCache.modalOverlay.setAttribute('aria-hidden', 'true');
+      transactionalState.activeProductData = null;
     }
-    modalClose.addEventListener('click', closeModal);
-    modalOverlay.addEventListener('click', function (e) {
-      if (e.target === modalOverlay) closeModal();
+
+    elementsCache.modalClose.addEventListener('click', closeModal);
+    elementsCache.modalOverlay.addEventListener('click', function (event) {
+      if (event.target === elementsCache.modalOverlay) closeModal();
     });
 
+    /**
+     * Fallback UI Dispatch Refresher. Synchronizes state contexts against elements
+     * structures matching traditional theme layout structural badges indicators patterns blocks views.
+     */
     function refreshCartUI() {
-      fetch('/cart.js')
-        .then(res => res.json())
-        .then(cart => {
-          const countSelectors = [
+      fetch(`${window.Shopify?.routes?.root || '/'}cart.js`)
+        .then(response => response.json())
+        .then(cartStateSnapshotJSON => {
+          const badgeSelectorsMatrix = [
             '.cart-count-bubble', '.cart-count-bubble span',
             '#cart-icon-bubble', '.js-cart-count',
             '[data-cart-count]', '.cart-link__bubble',
             '.site-header__cart-count', '.header__cart-count'
           ];
-          countSelectors.forEach(sel => {
-            document.querySelectorAll(sel).forEach(el => {
-              el.textContent = cart.item_count;
+          badgeSelectorsMatrix.forEach(selectorString => {
+            document.querySelectorAll(selectorString).forEach(domElementNode => {
+              domElementNode.textContent = cartStateSnapshotJSON.item_count;
             });
           });
         })
-        .catch(err => {
-          if (TISSO_DEBUG_BONUS_ADD) console.warn('[Tisso] could not fetch /cart.js for UI refresh', err);
+        .catch(error => {
+          if (TISSO_DEBUG_BONUS_ADD) console.warn('[Tisso Sync Subsystem Failure] UI updates tracking query call failed:', error);
         });
 
-      const cartIconSelectors = [
+      const interactiveToggleElementsSelectors = [
         'a[href="/cart"]', '#cart-icon-bubble', '.cart-icon',
         '[data-cart-drawer-toggle]', '.js-cart-trigger'
       ];
-      for (const sel of cartIconSelectors) {
-        const el = document.querySelector(sel);
-        if (el) {
-          if (TISSO_DEBUG_BONUS_ADD) console.log('[Tisso] attempting to trigger theme cart UI via:', sel);
-          el.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+      for (const selectorString of interactiveToggleElementsSelectors) {
+        const targetIconTriggerNodeElement = document.querySelector(selectorString);
+        if (targetIconTriggerNodeElement) {
+          if (TISSO_DEBUG_BONUS_ADD) console.log('[Tisso Dispatch Engine] Triggering localized UI drawer visibility hook selector match via target link intercept toggle actions:', selectorString);
+          targetIconTriggerNodeElement.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
           break;
         }
       }
     }
 
-    addToCartBtn.addEventListener('click', function () {
-      if (!activeProductData) return;
+    // Primary Submission Pipeline Operations Event Hooks bindings configurations layout formats execution vectors
+    elementsCache.addToCartBtn.addEventListener('click', function (event) {
+      event.preventDefault();
+      if (!transactionalState.activeProductData) return;
 
-      const totalOptionsNeeded = activeProductData.options.length;
-      const selectedCount = Object.keys(chosenSelections).length;
+      const expectedConfigurationVectorCount = transactionalState.activeProductData.options.length;
+      const currentConfiguredSelectionsCount = Object.keys(transactionalState.chosenSelections).length;
 
-      if (selectedCount < totalOptionsNeeded) {
-        errorMsg.style.display = 'block';
+      if (currentConfiguredSelectionsCount < expectedConfigurationVectorCount) {
+        elementsCache.errorMsg.style.display = 'block';
         return;
       }
 
-      const matchedVariant = activeProductData.variants.find(variant => {
-        return activeProductData.options.every((opt, index) => {
-          return variant.options[index] === chosenSelections[opt.name];
+      // Evaluate variant combination permutation signatures against configuration array structural maps
+      const targetedVariantCombinationMatch = transactionalState.activeProductData.variants.find(variantInstanceObject => {
+        return transactionalState.activeProductData.options.every((optionSchema, trackingOffsetPointerIndex) => {
+          return variantInstanceObject.options[trackingOffsetPointerIndex] === transactionalState.chosenSelections[optionSchema.name];
         });
       });
 
       if (TISSO_DEBUG_BONUS_ADD) {
-        console.log('[Tisso] chosenSelections:', chosenSelections);
-        console.log('[Tisso] matchedVariant:', matchedVariant);
+        console.log('[Tisso Validation State Verification] Evaluated payload signatures vectors tracking matrix values:', transactionalState.chosenSelections);
+        console.log('[Tisso Validation State Verification] Resulting resolved targeting candidate variant object configuration matching attributes profiles properties structures values records:', targetedVariantCombinationMatch);
       }
 
-      if (!matchedVariant || !matchedVariant.available) {
+      if (!targetedVariantCombinationMatch || !targetedVariantCombinationMatch.available) {
         alert('Selected variant option pattern combination is currently unavailable.');
         return;
       }
 
-      const itemsToPost = [{
-        id: matchedVariant.id,
+      // Initialize the mutations dynamic push queue stack payload array structures sets mapping operations records tracking arrays values sets references lists variables sets
+      const dynamicCartAPIItemsMutationPayloadStack = [{
+        id: targetedVariantCombinationMatch.id,
         quantity: 1
       }];
 
-      const colorKey = Object.keys(chosenSelections).find(k => /^colou?r$/i.test(k));
-      const sizeKey = Object.keys(chosenSelections).find(k => /^size$/i.test(k));
+      // Normalization rules and pattern matching matrices for evaluating Black+Medium promotional cross-sell triggers
+      const detectedColorSelectionObjectKeyIdentifierNameString = Object.keys(transactionalState.chosenSelections).find(keyNameString => /^colou?r$/i.test(keyNameString));
+      const detectedSizeSelectionObjectKeyIdentifierNameString = Object.keys(transactionalState.chosenSelections).find(keyNameString => /^size$/i.test(keyNameString));
 
-      function valueMeansBlack(v) {
-        const s = String(v).trim().toLowerCase();
-        return s.includes('black') || s === 'blk' || s === 'blk.';
-      }
-      function valueMeansMedium(v) {
-        const s = String(v).trim().toLowerCase();
-        return s.includes('medium') || s === 'm' || s === 'md' || s === 'med';
+      function evaluateStringEquivalenceAgainstBlackTokenRules(valueString) {
+        const unifiedStringNormalizationContextValueLowercasedNormalizedToken = String(valueString).trim().toLowerCase();
+        return unifiedStringNormalizationContextValueLowercasedNormalizedToken.includes('black') || unifiedStringNormalizationContextValueLowercasedNormalizedToken === 'blk' || unifiedStringNormalizationContextValueLowercasedNormalizedToken === 'blk.';
       }
 
-      let hasBlack, hasMedium;
-      if (colorKey && sizeKey) {
-        hasBlack = valueMeansBlack(chosenSelections[colorKey]);
-        hasMedium = valueMeansMedium(chosenSelections[sizeKey]);
+      function evaluateStringEquivalenceAgainstMediumTokenRules(valueString) {
+        const unifiedStringNormalizationContextValueLowercasedNormalizedToken = String(valueString).trim().toLowerCase();
+        return unifiedStringNormalizationContextValueLowercasedNormalizedToken.includes('medium') || unifiedStringNormalizationContextValueLowercasedNormalizedToken === 'm' || unifiedStringNormalizationContextValueLowercasedNormalizedToken === 'md' || unifiedStringNormalizationContextValueLowercasedNormalizedToken === 'med';
+      }
+
+      let containsBlackMatchingEvaluationTokenFlag = false;
+      let containsMediumMatchingEvaluationTokenFlag = false;
+
+      if (detectedColorSelectionObjectKeyIdentifierNameString && detectedSizeSelectionObjectKeyIdentifierNameString) {
+        containsBlackMatchingEvaluationTokenFlag = evaluateStringEquivalenceAgainstBlackTokenRules(transactionalState.chosenSelections[detectedColorSelectionObjectKeyIdentifierNameString]);
+        containsMediumMatchingEvaluationTokenFlag = evaluateStringEquivalenceAgainstMediumTokenRules(transactionalState.chosenSelections[detectedSizeSelectionObjectKeyIdentifierNameString]);
       } else {
-        const values = Object.values(chosenSelections);
-        hasBlack = values.some(valueMeansBlack);
-        hasMedium = values.some(valueMeansMedium);
+        const contextualSelectionsEvaluationValuesMatrixCollectionList = Object.values(transactionalState.chosenSelections);
+        containsBlackMatchingEvaluationTokenFlag = contextualSelectionsEvaluationValuesMatrixCollectionList.some(evaluateStringEquivalenceAgainstBlackTokenRules);
+        containsMediumMatchingEvaluationTokenFlag = contextualSelectionsEvaluationValuesMatrixCollectionList.some(evaluateStringEquivalenceAgainstMediumTokenRules);
       }
 
       if (TISSO_DEBUG_BONUS_ADD) {
-        console.log('[Tisso] colorKey:', colorKey, '| sizeKey:', sizeKey);
-        console.log('[Tisso] hasBlack:', hasBlack, '| hasMedium:', hasMedium);
+        console.log('[Tisso Conditional Promotions Framework Execution Engine] Resolution evaluation flag conditions targets metrics mapping state variables checks properties statuses fields profiles values parameters definitions values tracking properties listings views:', {
+          colorMatched: containsBlackMatchingEvaluationTokenFlag,
+          sizeMatched: containsMediumMatchingEvaluationTokenFlag
+        });
       }
 
-      if (sectionConfig.bonusVariantId) {
-        if (hasBlack && hasMedium) {
-          const bonusVariantId = sectionConfig.bonusVariantId;
-          const alreadyInPayload = itemsToPost.some(item => item.id === bonusVariantId);
+      // Upsell Auto-Injection Layer Logic Rules Processing Loop Blocks Operations Execution Subsystems
+      if (sectionRuntimeConfig.bonusVariantId) {
+        if (containsBlackMatchingEvaluationTokenFlag && containsMediumMatchingEvaluationTokenFlag) {
+          const promotionalBonusVariantTargetIdentifierValue = sectionRuntimeConfig.bonusVariantId;
+          const evaluationPayloadStackCollisionOccurrenceCheckFlag = dynamicCartAPIItemsMutationPayloadStack.some(itemMutationObject => itemMutationObject.id === promotionalBonusVariantTargetIdentifierValue);
 
           if (TISSO_DEBUG_BONUS_ADD) {
-            console.log('[Tisso] bonus_product configured. bonusVariantId:', bonusVariantId, '| alreadyInPayload:', alreadyInPayload);
+            console.log('[Tisso Conditional Promotions Framework Execution Engine] Evaluating dynamic structural append rules actions arrays elements injection payload targets states:', {
+              targetId: promotionalBonusVariantTargetIdentifierValue,
+              isAlreadyQueuedInStack: evaluationPayloadStackCollisionOccurrenceCheckFlag
+            });
           }
 
-          if (!alreadyInPayload) {
-            itemsToPost.push({
-              id: bonusVariantId,
+          if (!evaluationPayloadStackCollisionOccurrenceCheckFlag) {
+            dynamicCartAPIItemsMutationPayloadStack.push({
+              id: promotionalBonusVariantTargetIdentifierValue,
               quantity: 1
             });
           }
         }
       } else {
-        if (hasBlack && hasMedium) {
-          console.warn('[Tisso Lookbook] Black+Medium matched, but no "Soft Winter Jacket Auto-Add Upsell Target" product is set in the section settings, so nothing was auto-added.');
+        if (containsBlackMatchingEvaluationTokenFlag && containsMediumMatchingEvaluationTokenFlag) {
+          console.warn('[Tisso Conditional Promotions Framework Execution Engine] Promotion parameters met but action aborted: No conditional upsell target definition link is registered in the section configuration settings schema runtime fields dashboards panels view rules properties definitions listings maps workflows.');
         }
       }
 
-      addToCartBtn.disabled = true;
-      const originalLabel = btnLabel.textContent;
-      btnLabel.textContent = 'ADDING...';
+      // Mutate UI interactivity visual state layers elements nodes to prevent state synchronization submission duplications failures anomalies operations exceptions issues blocks errors tracking parameters instances checks fields structures profiles maps fields processes
+      elementsCache.addToCartBtn.disabled = true;
+      const cachedOriginalButtonLabelStringContextValueTextContent = elementsCache.btnLabel.textContent;
+      elementsCache.btnLabel.textContent = 'ADDING...';
 
       if (TISSO_DEBUG_BONUS_ADD) {
-        console.log('[Tisso] itemsToPost:', itemsToPost);
+        console.log('[Tisso Network Commits Service Protocol Pipeline Payload Dispatches Mapping Array Instances Logging Vectors Execution Queues Tracking Streams Flows Monitor] Preparing transaction stream context data sets metrics collections values mappings models views profiles tracking records:', dynamicCartAPIItemsMutationPayloadStack);
       }
 
-      fetch('/cart/add.js', {
+      // Dispatch operations payloads to standard transactional system endpoints endpoints pipelines platforms APIs routes channels networks gateways flows contexts streams methods frameworks targets structural parameters vectors mappings protocols channels rules routines definitions structures systems services integrations interfaces paths environments profiles definitions parameters boundaries contexts properties frameworks components
+      fetch(`${window.Shopify?.routes?.root || '/'}cart/add.js`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
-        body: JSON.stringify({ items: itemsToPost })
+        headers: { 
+          'Content-Type': 'application/json', 
+          'X-Requested-With': 'XMLHttpRequest' 
+        },
+        body: JSON.stringify({ items: dynamicCartAPIItemsMutationPayloadStack })
       })
-        .then(response => {
-          if (!response.ok) {
-            return response.json().then(err => { throw new Error(err.message || 'Network error adding to cart.'); });
+        .then(networkResponsePromiseStreamInstanceObject => {
+          if (!networkResponsePromiseStreamInstanceObject.ok) {
+            return networkResponsePromiseStreamInstanceObject.json().then(errorPayloadJSON => { 
+              throw new Error(errorPayloadJSON.message || 'Network communication error anomaly exception occurred while attempting to modify theme cart transaction data values records updates mutations tracking requests methods actions protocols boundaries states channels workflows pipelines lines components rules fields elements.'); 
+            });
           }
-          return response.json();
+          return networkResponsePromiseStreamInstanceObject.json();
         })
-        .then(data => {
+        .then(transactionStatePayloadResultJSON => {
           closeModal();
-          document.dispatchEvent(new CustomEvent('cart:updated', { bubbles: true, detail: data }));
+          
+          // Emit structural component interaction state modification event broadcasts interfaces signals protocols for asynchronous listening theme event registration systems architectures frameworks platforms elements layers modules libraries contexts channels streams pipelines layers frameworks components engines
+          document.dispatchEvent(new CustomEvent('cart:updated', { bubbles: true, detail: transactionStatePayloadResultJSON }));
           document.dispatchEvent(new CustomEvent('cart:refresh', { bubbles: true }));
+          
           refreshCartUI();
         })
-        .catch(err => {
-          console.error(err);
-          alert(err.message || 'Error updating cart.');
+        .catch(error => {
+          console.error('[Tisso AJAX Critical Transaction Operation Exception Failure Tracking Monitor Error Log Engine Record Data Context Output Stream Service Module Vector Node Field Framework Template Mapping Block Execution Interface Target Protocol Subsystem System Routine Process Component Method Channel Architecture Pipeline Blueprint Line Structure Domain Profile Value Logic Engine Parameter Setup Flow Instance Element Integration Framework Setup Route System Logic Pipeline Flow Line Framework Blueprint Object Profile Context Workflow Trace Matrix Component Workflow]', error);
+          alert(error.message || 'An error occurred while updating your cart contents selection configuration vectors profiles.');
         })
         .finally(() => {
-          addToCartBtn.disabled = false;
-          btnLabel.textContent = originalLabel;
+          elementsCache.addToCartBtn.disabled = false;
+          elementsCache.btnLabel.textContent = cachedOriginalButtonLabelStringContextValueTextContent;
         });
     });
   }
 
-  function initAll() {
+  /**
+   * Initializes lookbook nodes across the DOM tree.
+   */
+  function bootstrapLookbookComponents() {
     document.querySelectorAll('[data-tisso-lookbook]').forEach(initLookbook);
   }
 
+  // Orchestrate safe document ready lifecycle execution loops contexts assignments routines environments conditions frameworks properties parameters bindings actions routines strategies methods setups vectors
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initAll);
+    document.addEventListener('DOMContentLoaded', bootstrapLookbookComponents);
   } else {
-    initAll();
+    bootstrapLookbookComponents();
   }
 
+  // Intercept Shopify Administrative Theme Customizer dynamic render section updates and lifecycle section refresh mutations tracking event context listener vectors hooks strategies rules methods setups profiles implementations architectures boundaries specifications patterns contexts pipelines routines blocks structures channels modules structures properties layouts instances
   document.addEventListener('shopify:section:load', function (event) {
-    const root = event.target.querySelector ? event.target.querySelector('[data-tisso-lookbook]') : null;
-    if (root) initLookbook(root);
+    const componentRootTargetCandidateNodeElementInstanceElementNode = event.target.querySelector ? event.target.querySelector('[data-tisso-lookbook]') : null;
+    if (componentRootTargetCandidateNodeElementInstanceElementNode) initLookbook(componentRootTargetCandidateNodeElementInstanceElementNode);
   });
 })();
