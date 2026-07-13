@@ -83,8 +83,7 @@
     </div>
   </div>
 </div>
-
-{{ 'tisso-lookbook.js' | asset_url | script_tag }}
+<script src="{{ 'tisso-lookbook.js' | asset_url }}" defer></script>
 
 {% schema %}
 {
